@@ -1,10 +1,24 @@
 //connection
 var express = require('express')
 var app = express()
-
+var parser = require('body-parser')
 var mongoose = require('mongoose')
 mongoose.connect('mongodb://localhost/wanderfully')
 var db = mongoose.connection
+var cors = require('cors')
+
+
+app.use(cors())
+app.use(parser.json())
+app.use(parser.urlencoded({ extended:true }))
+// app.use(methodOverride(function(req, res){
+//       if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+//         // look in urlencoded POST bodies and delete it
+//         var method = req.body._method
+//         delete req.body._method
+//         return method
+//       }
+// }))
 
 db.once('open', () => {
   console.log("database connected");
@@ -73,7 +87,31 @@ var Photo = mongoose.model('Photo', PhotoSchema)
 
 //api
 app.get('/', (req, res) => {
-  res.send("Hello world")
+  res.json("hello world")
+})
+
+app.get('/users', (req, res, next) => {
+  User.find({}).then(function(users){
+    res.json(users)
+  })
+})
+
+app.get('/trips', (req, res, next) => {
+  Trip.find({}).then(trips => {
+    res.json(trips)
+  })
+})
+
+app.post('/trips/:id/delete', (req, res) => {
+  Trip.findOneAndRemove({_id: req.params.id}).then(function(deleted){
+    res.json(deleted)
+  })
+})
+
+app.post('/trips', (req, res) => {
+  Trip.create(req.body).then(function(trip){
+    console.log(trip)
+  })
 })
 
 app.listen(4000, function(){
