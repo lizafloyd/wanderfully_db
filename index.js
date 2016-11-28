@@ -6,11 +6,23 @@ var mongoose = require('mongoose')
 mongoose.connect('mongodb://localhost/wanderfully')
 var db = mongoose.connection
 var cors = require('cors')
+var passport = require('passport')
+var LocalStrategy = require('passport-local').Strategy
+var crypto = require('crypto')
+var jwtoken = require('jsonwebtoken')
+var jwt = require('express-jwt')
+var auth = jwt({
+  secret: 'littletomato',
+  userProperty: 'payload'
+})
 
 
 app.use(cors())
 app.use(parser.json())
 app.use(parser.urlencoded({ extended:true }))
+// app.use(express.sessions({secret: 'littletomato'}))
+app.use(passport.initialize())
+app.use(passport.session())
 // app.use(methodOverride(function(req, res){
 //       if (req.body && typeof req.body === 'object' && '_method' in req.body) {
 //         // look in urlencoded POST bodies and delete it
@@ -19,6 +31,23 @@ app.use(parser.urlencoded({ extended:true }))
 //         return method
 //       }
 // }))
+
+passport.use(new LocalStrategy({
+  usernameField: 'email'
+},
+  function(username, password, done) {
+    User.findOne({ email: username }, function(err, user) {
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });
+  }
+));
 
 db.once('open', () => {
   console.log("database connected");
@@ -30,12 +59,40 @@ var ObjectId = Schema.ObjectId
 
 var UserSchema = new Schema({
   name: String,
-  username: String,
+  email: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  hash: String,
+  salt: String,
   trips: [ {type: Schema.ObjectId, ref: 'Trip'} ],
   searchable: Boolean,
   photos: [ {type: Schema.ObjectId, ref: 'Photo'} ],
   stories: [ {type: Schema.ObjectId, ref: 'Story'} ]
 })
+
+UserSchema.methods.setPassword = function(password){
+  this.salt = crypto.randomBytes(16).toString('hex')
+  this.hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex')
+}
+
+UserSchema.methods.validPassword = function(password){
+  var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64).toString('hex')
+  return this.hash === hash
+}
+
+UserSchema.methods.generateJwt = function(){
+  var expiry = new Date()
+  expiry.setDate(expiry.getDate() + 7)
+
+  return jwtoken.sign({
+    _id: this._id,
+    email: this.email,
+    name: this.name,
+    exp: parseInt(expiry.getTime() / 1000),
+  }, 'littletomato')
+}
 
 var TripSchema = new Schema({
   name: String,
@@ -109,14 +166,82 @@ var Photo = mongoose.model('Photo', PhotoSchema)
 // var samplestory = new Story({text: 'Sample story'})
 // samplestory.save((err) => {})
 
+//authentication
+app.post('/register', (req, res) => {
+  var user = new User()
+
+  user.name = req.body.name
+  user.email = req.body.email
+
+  user.setPassword(req.body.password)
+
+  user.save(function(err){
+    var token;
+    token = user.generateJwt()
+    res.status(200)
+    res.json({
+      'token': token
+    })
+  })
+})
+
+app.post('/login', (req, res) => {
+  passport.authenticate('local', (err, user, info) => {
+    var token
+
+    if (err) {
+      res.status(404).json(err)
+      return
+    }
+    if (user) {
+      token = user.generateJwt()
+      res.status(200)
+      res.json({
+        'token': token
+      })
+    } else {
+      res.status(401).json(info)
+    }
+  }) (req, res)
+})
+
+// app.get('/profile/:userid', (req, res) => {
+//   res.json(req.user)
+// })
+
 //api
 app.get('/', (req, res) => {
   res.json("hello world")
 })
 
+app.get('/users/:email', (req, res, next) => {
+  User.findOne({email: req.params.email}).then(user => {
+    res.json(user)
+  })
+})
+
 app.get('/users', (req, res, next) => {
   User.find({}).then(function(users){
     res.json(users)
+  })
+})
+
+//data custom gets
+app.get('/recommendations/:country', (req, res, next) => {
+  Recommendation.find({country: req.params.country}).then(function(custom){
+    res.json(custom)
+  })
+})
+
+app.get('/stories/:country', (req, res, next) => {
+  Story.find({country: req.params.country}).then(function(custom){
+    res.json(custom)
+  })
+})
+
+app.get('/photos/:country', (req, res, next) => {
+  Photo.find({country: req.params.country}).then(function(custom){
+    res.json(custom)
   })
 })
 //trip index
