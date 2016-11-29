@@ -98,24 +98,29 @@ var TripSchema = new Schema({
   name: String,
   planned: Boolean,
   travelers: [ {type: Schema.ObjectId, ref: 'User'} ],
-  destinations: [{
-    destination: {type: Schema.ObjectId, ref: 'Destination'},
-    required: Boolean,
-    confirmed: Boolean
-  }],
+  // destinations: [{
+  //   destination: {type: Schema.ObjectId, ref: 'Destination'},
+  //   required: Boolean,
+  //   confirmed: Boolean
+  // }],
   notes: String,
-  expenses: String
-})
-
-var DestinationSchema = new Schema({
-  name: String,
-  address: String,
-  country: String,
-  type: String,
+  // expenses: String,
+  country: Array,
+  // type: String,
   photos: [ {type: Schema.ObjectId, ref: 'Photo'} ],
   stories: [ {type: Schema.ObjectId, ref: 'Story'} ],
   recommendations: [ {type: Schema.ObjectId, ref: 'Recommendation'} ]
 })
+
+// var DestinationSchema = new Schema({
+//   name: String,
+//   address: String,
+//   country: String,
+//   type: String,
+//   photos: [ {type: Schema.ObjectId, ref: 'Photo'} ],
+//   stories: [ {type: Schema.ObjectId, ref: 'Story'} ],
+//   recommendations: [ {type: Schema.ObjectId, ref: 'Recommendation'} ]
+// })
 
 var RecommendationSchema = new Schema({
   user: {type: Schema.ObjectId, ref: 'User'},
@@ -140,7 +145,7 @@ var PhotoSchema = new Schema({
 
 var User = mongoose.model('User', UserSchema)
 var Trip = mongoose.model('Trip', TripSchema)
-var Destination = mongoose.model('Destination', DestinationSchema)
+// var Destination = mongoose.model('Destination', DestinationSchema)
 var Recommendation = mongoose.model('Recommendation', RecommendationSchema)
 var Story = mongoose.model('Story', StorySchema)
 var Photo = mongoose.model('Photo', PhotoSchema)
@@ -214,6 +219,12 @@ app.get('/', (req, res) => {
   res.json("hello world")
 })
 
+app.get('/users/id/:id', (req, res, next) => {
+  User.findOne({_id: req.params.id}).then(user => {
+    res.json(user)
+  })
+})
+
 app.get('/users/:email', (req, res, next) => {
   User.findOne({email: req.params.email}).then(user => {
     res.json(user)
@@ -225,7 +236,24 @@ app.get('/users', (req, res, next) => {
     res.json(users)
   })
 })
+//users custom gets
+app.get('/custom/trips/:userid', (req, res, next) => {
+  Trip.find({travelers: req.params.userid}).then(trips => {
+    res.json(trips)
+  })
+})
 
+app.post('/custom/trips/:userid', (req, res, next) => {
+  Trip.create(req.body).then(function(trip){
+    console.log(trip);
+    User.findOne({_id:req.params.userid}).then((user) => {
+      trip.travelers.push(user)
+      trip.save().then((newTrip) => {
+        console.log(newTrip);
+      })
+    })
+  })
+})
 //data custom gets
 app.get('/recommendations/:country', (req, res, next) => {
   Recommendation.find({country: req.params.country}).then(function(custom){
@@ -259,6 +287,7 @@ app.get('/trips/:id', (req, res, next) => {
 })
 //trip create
 app.post('/trips', (req, res) => {
+  console.log(req.body);
   Trip.create(req.body).then(function(trip){
     console.log(trip)
   })
