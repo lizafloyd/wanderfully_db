@@ -254,19 +254,19 @@ app.post('/custom/trips/:userid', (req, res, next) => {
   })
 })
 //data custom gets
-app.get('/recommendations/:country', (req, res, next) => {
+app.get('/country/recommendations/:country', (req, res, next) => {
   Recommendation.find({country: req.params.country}).then(function(custom){
     res.json(custom)
   })
 })
 
-app.get('/stories/:country', (req, res, next) => {
+app.get('/country/stories/:country', (req, res, next) => {
   Story.find({country: req.params.country}).then(function(custom){
     res.json(custom)
   })
 })
 
-app.get('/photos/:country', (req, res, next) => {
+app.get('/country/photos/:country', (req, res, next) => {
   Photo.find({country: req.params.country}).then(function(custom){
     res.json(custom)
   })
@@ -305,12 +305,24 @@ app.delete('/trips/:id', (req, res) => {
   })
 })
 
+//recommendation index
+app.get('/recommendations', (req, res, next) => {
+  Recommendation.find({}).then(function(recs){
+    res.json(recs)
+  })
+})
+//recommendation create
+app.post('/recommendations', (req, res, next) => {
+  Recommendation.create(req.body).then(function(rec){
+    console.log(rec)
+  })
+})
 //recommendation show
 app.get('/recommendations/:id', (req, res, next) => {
-  res.json(req.params)
-  // Recommendation.findOne({_id: req.params.id}).then(rec => {
-  //   res.json(rec)
-  // })
+  console.log(req.params.id);
+  Recommendation.findOne({_id: req.params.id}).then(rec => {
+    res.json(rec)
+  })
 })
 //recommendation update
 app.put('/recommendations/:id', (req, res) => {
@@ -324,18 +336,6 @@ app.put('/recommendations/:id', (req, res) => {
 app.delete('/recommendations/:id', (req, res) => {
   Recommendation.findOneAndRemove({_id: req.params.id}).then(function(deleted){
     res.json(deleted)
-  })
-})
-//recommendation index
-app.get('/recommendations', (req, res, next) => {
-  Recommendation.find({}).then(function(recs){
-    res.json(recs)
-  })
-})
-//recommendation create
-app.post('/recommendations', (req, res, next) => {
-  Recommendation.create(req.body).then(function(rec){
-    console.log(rec)
   })
 })
 
