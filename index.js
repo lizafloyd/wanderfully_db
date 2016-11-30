@@ -3,6 +3,7 @@ var express = require('express')
 var app = express()
 var parser = require('body-parser')
 var mongoose = require('mongoose')
+mongoose.Promise = global.Promise
 mongoose.connect('mongodb://localhost/wanderfully')
 var db = mongoose.connection
 var cors = require('cors')
@@ -209,10 +210,6 @@ app.post('/login', (req, res) => {
   }) (req, res)
 })
 
-// app.get('/profile/:userid', (req, res) => {
-//   res.json(req.user)
-// })
-
 //api
 app.get('/', (req, res) => {
   res.json("hello world")
@@ -235,22 +232,85 @@ app.get('/users', (req, res, next) => {
     res.json(users)
   })
 })
-//users custom gets
-app.get('/custom/trips/:userid', (req, res, next) => {
+//users custom gets  - dreams --not working
+app.get('/custom/dreams/:userid', (req, res, next) => {
+  Trip.find({travelers: req.params.userid}, {planned:false}).then(trips => {
+    res.json(trips)
+  })
+})
+//users custom gets  - plans
+app.get('/custom/plans/:userid', (req, res, next) => {
   Trip.find({travelers: req.params.userid}).then(trips => {
     res.json(trips)
   })
 })
 
-app.post('/custom/trips/:userid', (req, res, next) => {
-  Trip.create(req.body).then(function(trip){
-    console.log(trip);
-    User.findOne({_id:req.params.userid}).then((user) => {
-      trip.travelers.push(user)
+app.put('/addRec/:tripid/:recid', (req, res, next) => {
+  Trip.findOne({_id:req.params.tripid}).then((trip) => {
+    Recommendation.findOne({_id:req.params.recid}).then((rec) => {
+      trip.recommendations.push(rec)
+      console.log(trip);
       trip.save().then((newTrip) => {
         console.log(newTrip);
       })
     })
+  })
+})
+
+app.put('/addStory/:tripid/:storyid', (req, res, next) => {
+  Trip.findOne({_id:req.params.tripid}).then((trip) => {
+    Story.findOne({_id:req.params.storyid}).then((story) => {
+      trip.stories.push(story)
+      console.log(trip);
+      trip.save().then((newTrip) => {
+        console.log(newTrip);
+      })
+    })
+  })
+})
+
+app.put('/addPhoto/:tripid/:photoid', (req, res, next) => {
+  Trip.findOne({_id:req.params.tripid}).then((trip) => {
+    Photo.findOne({_id:req.params.photoid}).then((photo) => {
+      trip.photos.push(photo)
+      console.log(trip);
+      trip.save().then((newTrip) => {
+        console.log(newTrip);
+      })
+    })
+  })
+})
+
+app.post('/custom/dreams/:userid', (req, res, next) => {
+  Trip.create(req.body).then(function(trip){
+    User.findOne({_id:req.params.userid}).then((user) => {
+      trip.travelers.push(user)
+      trip.planned = false
+      trip.save().then((newTrip) => {
+        console.log("dream created");
+        console.log(newTrip);
+      })
+    })
+  })
+})
+app.post('/custom/plans/:userid', (req, res, next) => {
+  Trip.create(req.body).then(function(trip){
+    console.log(trip);
+    User.findOne({_id:req.params.userid}).then((user) => {
+      trip.travelers.push(user)
+      trip.planned = true
+      trip.save().then((newTrip) => {
+        console.log("plan created");
+        console.log(newTrip);
+      })
+    })
+  })
+})
+//trip create -- for deletion
+app.post('/trips', (req, res) => {
+  console.log(req.body);
+  Trip.create(req.body).then(function(trip){
+    console.log(trip)
   })
 })
 //data custom gets
@@ -284,13 +344,7 @@ app.get('/trips/:id', (req, res, next) => {
     res.json(trip)
   })
 })
-//trip create
-app.post('/trips', (req, res) => {
-  console.log(req.body);
-  Trip.create(req.body).then(function(trip){
-    console.log(trip)
-  })
-})
+
 //trip update
 app.put('/trips/:id', (req, res) => {
   console.log(req.body);
