@@ -153,7 +153,6 @@ var Photo = mongoose.model('Photo', PhotoSchema)
 //seeds
 // User.remove({}, (err) => {})
 // Trip.remove({}, err => {})
-// Destination.remove({}, err => {})
 // Recommendation.remove({}, err => {})
 // Story.remove({}, err => {})
 // Photo.remove({}, err => {})
@@ -294,7 +293,6 @@ app.post('/trips', (req, res) => {
 })
 //trip update
 app.put('/trips/:id', (req, res) => {
-  console.log("hitting db");
   console.log(req.body);
   Trip.findOneAndUpdate({_id: req.params.id}, req.body, {new:true}).then(response => {
     console.log(response);
@@ -307,24 +305,12 @@ app.delete('/trips/:id', (req, res) => {
   })
 })
 
-//recommendation index
-app.get('/recommendations', (req, res, next) => {
-  Recommendation.find({}).then(function(recs){
-    res.json(recs)
-  })
-})
-//recommendation create
-app.post('/recommendations', (req, res, next) => {
-  Recommendation.create(req.body).then(function(rec){
-    console.log(rec)
-  })
-})
 //recommendation show
 app.get('/recommendations/:id', (req, res, next) => {
-  console.log(req.params.id);
-  Recommendation.findOne({_id: req.params.id}).then(rec => {
-    res.json(rec)
-  })
+  res.json(req.params)
+  // Recommendation.findOne({_id: req.params.id}).then(rec => {
+  //   res.json(rec)
+  // })
 })
 //recommendation update
 app.put('/recommendations/:id', (req, res) => {
@@ -338,6 +324,18 @@ app.put('/recommendations/:id', (req, res) => {
 app.delete('/recommendations/:id', (req, res) => {
   Recommendation.findOneAndRemove({_id: req.params.id}).then(function(deleted){
     res.json(deleted)
+  })
+})
+//recommendation index
+app.get('/recommendations', (req, res, next) => {
+  Recommendation.find({}).then(function(recs){
+    res.json(recs)
+  })
+})
+//recommendation create
+app.post('/recommendations', (req, res, next) => {
+  Recommendation.create(req.body).then(function(rec){
+    console.log(rec)
   })
 })
 
