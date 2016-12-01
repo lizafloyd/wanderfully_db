@@ -256,6 +256,12 @@ app.get('/custom/plans/:userid', (req, res, next) => {
     res.json(plans)
   })
 })
+//for recommendations page, which needs both
+app.get('/custom/trips/:userid', (req, res, next) => {
+  Trip.find({travelers: req.params.userid}).then(trips => {
+    res.json(trips)
+  })
+})
 
 app.put('/addRec/:tripid/:recid', (req, res, next) => {
   Trip.findOne({_id:req.params.tripid}).then((trip) => {
