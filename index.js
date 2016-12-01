@@ -264,6 +264,7 @@ app.put('/addRec/:tripid/:recid', (req, res, next) => {
       console.log(trip);
       trip.save().then((newTrip) => {
         console.log(newTrip);
+        res.json(newTrip)
       })
     })
   })
@@ -276,6 +277,7 @@ app.put('/addStory/:tripid/:storyid', (req, res, next) => {
       console.log(trip);
       trip.save().then((newTrip) => {
         console.log(newTrip);
+        res.json(newTrip)
       })
     })
   })
@@ -288,6 +290,7 @@ app.put('/addPhoto/:tripid/:photoid', (req, res, next) => {
       console.log(trip);
       trip.save().then((newTrip) => {
         console.log(newTrip);
+        res.json(newTrip)
       })
     })
   })
@@ -301,6 +304,7 @@ app.post('/custom/dreams/:userid', (req, res, next) => {
       trip.save().then((newTrip) => {
         console.log("dream created");
         console.log(newTrip);
+        res.json(trip)
       })
     })
   })
@@ -314,6 +318,7 @@ app.post('/custom/plans/:userid', (req, res, next) => {
       trip.save().then((newTrip) => {
         console.log("plan created");
         console.log(newTrip);
+        res.json(trip)
       })
     })
   })
@@ -323,6 +328,7 @@ app.post('/trips', (req, res) => {
   console.log(req.body);
   Trip.create(req.body).then(function(trip){
     console.log(trip)
+    res.json(trip)
   })
 })
 //data custom gets
@@ -362,6 +368,7 @@ app.put('/trips/:id', (req, res) => {
   console.log(req.body);
   Trip.findOneAndUpdate({_id: req.params.id}, req.body, {new:true}).then(response => {
     console.log(response);
+    res.json(response)
   })
 })
 //trip delete
@@ -381,6 +388,7 @@ app.get('/recommendations', (req, res, next) => {
 app.post('/recommendations', (req, res, next) => {
   Recommendation.create(req.body).then(function(rec){
     console.log(rec)
+    res.json(rec)
   })
 })
 //recommendation show
@@ -396,6 +404,7 @@ app.put('/recommendations/:id', (req, res) => {
   console.log(req.body);
   Recommendation.findOneAndUpdate({_id: req.params.id}, req.body, {new:true}).then(response => {
     console.log(response);
+    res.json(response)
   })
 })
 //recommendation delete
@@ -415,6 +424,7 @@ app.get('/stories', (req, res, next) => {
 app.post('/stories', (req, res, next) => {
   Story.create(req.body).then(function(story){
     console.log(story)
+    res.json(story)
   })
 })
 //story show
@@ -430,6 +440,7 @@ app.put('/stories/:id', (req, res) => {
   console.log(req.body);
   Story.findOneAndUpdate({_id: req.params.id}, req.body, {new:true}).then(response => {
     console.log(response);
+    res.json(response)
   })
 })
 //story delete
@@ -450,6 +461,7 @@ app.post('/photos', (req, res, next) => {
   console.log(req.body);
   Photo.create(req.body).then(function(photo){
     console.log(photo.photo);
+    res.json(photo)
   })
 })
 //photo show
@@ -465,6 +477,7 @@ app.put('/photos/:id', (req, res) => {
   console.log(req.body);
   Photo.findOneAndUpdate({_id: req.params.id}, req.body, {new:true}).then(response => {
     console.log(response);
+    res.json(response)
   })
 })
 //photo delete
