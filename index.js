@@ -234,14 +234,26 @@ app.get('/users', (req, res, next) => {
 })
 //users custom gets  - dreams --not working
 app.get('/custom/dreams/:userid', (req, res, next) => {
-  Trip.find({travelers: req.params.userid}, {planned:false}).then(trips => {
-    res.json(trips)
+  Trip.find({travelers: req.params.userid}).then(trips => {
+    let dreams = []
+    trips.forEach((trip) => {
+      if(trip.planned == false){
+        dreams.push(trip)
+      }
+    })
+    res.json(dreams)
   })
 })
 //users custom gets  - plans
 app.get('/custom/plans/:userid', (req, res, next) => {
   Trip.find({travelers: req.params.userid}).then(trips => {
-    res.json(trips)
+    let plans = []
+    trips.forEach((trip) => {
+      if(trip.planned == true){
+        plans.push(trip)
+      }
+    })
+    res.json(plans)
   })
 })
 
