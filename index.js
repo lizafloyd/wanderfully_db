@@ -493,6 +493,6 @@ app.delete('/photos/:id', (req, res) => {
   })
 })
 
-app.listen(4000, function(){
+app.listen(process.env.PORT || 4000, function(){
   console.log("app listening at 4000");
 })
