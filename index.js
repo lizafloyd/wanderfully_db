@@ -4,7 +4,7 @@ var app = express()
 var parser = require('body-parser')
 var mongoose = require('mongoose')
 mongoose.Promise = global.Promise
-mongoose.connect('mongodb://localhost/wanderfully')
+mongoose.connect('mongodb://heroku_0kxl4wn8:7coqi4i0r2ciqa9beho4pc2kg1@ds119728.mlab.com:19728/heroku_0kxl4wn8')
 var db = mongoose.connection
 var cors = require('cors')
 var passport = require('passport')
